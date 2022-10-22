@@ -7,6 +7,8 @@ name = "pypi"
 uvicorn = "*"
 fastapi = "*"
 sqlalchemy = "*"
+fastapi-users = {extras = ["sqlalchemy"], version = "*"}
+black = "*"
 
 [dev-packages]
 

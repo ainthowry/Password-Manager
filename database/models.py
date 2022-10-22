@@ -1,15 +1,17 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 
-from .database import Base
+from fastapi_users.db import SQLAlchemyBaseUserTableUUID
+
+Base: DeclarativeMeta = declarative_base()
 
 
-class User(Base):
+class User(SQLAlchemyBaseUserTableUUID, Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
+    password = Column(String)
 
     subAccounts = relationship("SubAccount", back_populates="owner")
 
@@ -21,5 +23,5 @@ class SubAccount(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     name = Column(String, index=True)
     password = Column(String)
-    
+
     owner = relationship("User", back_populates="subAccounts")
