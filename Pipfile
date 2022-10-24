@@ -9,6 +9,12 @@ fastapi = "*"
 sqlalchemy = "*"
 fastapi-users = {extras = ["sqlalchemy"], version = "*"}
 black = "*"
+uuid = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
+passlib = "*"
+fastapi-jwt-auth = "*"
+jwt = "*"
+pyjwt = "*"
 
 [dev-packages]
 

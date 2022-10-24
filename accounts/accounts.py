@@ -1,13 +1,18 @@
 # Used for importing models from database -> python doesn't import from parent directories
 import sys
-from database.database import get_async_session
+from database.helpers import get_async_session
 
 sys.path.append("..")
 
 # Imports
-from fastapi import Depends, APIRouter
-from database.dto import Account, RegisterInput
+from fastapi import Depends, APIRouter, Form
+
+from fastapi_another_jwt_auth import AuthJWT
+
 from sqlalchemy.orm import Session
+
+# Helper functions
+from .helpers import *
 
 # Db models
 from database import models
@@ -15,41 +20,53 @@ from database import models
 accountprefix = "/accounts"
 accountroute = APIRouter()
 
+#Generate secret_key 
+
+#GetAllSubAccounts -> subaccount.id, subaccount.name, subaccount.username
+#GetSubAccount
+#CreateSubAccount
+#DeleteSubAccount
 
 @accountroute.get("/")
-def status():
+def health():
     return {"service": "accounts", "status": "Healthy"}
 
 
-@accountroute.post(
-    "/login",
-)
-def login(loginInput: Account, db: Session = Depends(get_async_session)):
-    result = models.User(
-        username=registerInput.username, password=registerInput.password
-    )
-    db.add(result)
-    db.commit()
-    db.refresh(result)
-    return owner
+@accountroute.post("/change")
+async def change(
+    newPassword: str = Form(),
+    Authorize: AuthJWT = Depends(),
+    db: Session = Depends(get_async_session),
+):
+    Authorize.jwt_required()
 
+    current_user = Authorize.get_jwt_subject()
 
-@accountroute.post("/register")
-def register(registerInput: RegisterInput, db: Session = Depends(get_async_session)):
-    result = models.User(
-        username=registerInput.username, password=registerInput.password
+    result = await update_password(
+        username=current_user, newPassword=newPassword, db=db
     )
-    db.add(result)
-    db.commit()
-    db.refresh(result)
     return result
 
 
-@accountroute.post("/change")
-def change(loginInput: Account, newPassword: str):
-    return loginInput, newPassword
-
-
 @accountroute.get("/subaccount")
-def subaccount(loginInput: Account):
-    return loginInput
+async def subaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+
+    current_user = Authorize.get_jwt_subject()
+    return {"name": "name" , "username":"username", "password": "hello"}
+
+
+@accountroute.get("/create/subaccount")
+async def create_subaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+
+    current_user = Authorize.get_jwt_subject()
+    return current_user
+
+
+@accountroute.delete("/create/subaccount")
+async def create_subaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+
+    current_user = Authorize.get_jwt_subject()
+    return current_user
