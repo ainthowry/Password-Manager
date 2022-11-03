@@ -20,12 +20,13 @@ from database import models
 accountprefix = "/accounts"
 accountroute = APIRouter()
 
-#Generate secret_key 
+# Generate secret_key
 
-#GetAllSubAccounts -> subaccount.id, subaccount.name, subaccount.username
-#GetSubAccount
-#CreateSubAccount
-#DeleteSubAccount
+# GetAllSubAccounts -> subaccount.id, subaccount.name, subaccount.username
+# GetSubAccount
+# CreateSubAccount
+# DeleteSubAccount
+
 
 @accountroute.get("/")
 def health():
@@ -53,11 +54,11 @@ async def subaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
     Authorize.jwt_required()
 
     current_user = Authorize.get_jwt_subject()
-    return {"name": "name" , "username":"username", "password": "hello"}
+    return {"name": "name", "username": "username", "password": "hello"}
 
 
-@accountroute.get("/create/subaccount")
-async def create_subaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
+@accountroute.get("/subaccounts")
+async def findAllSubaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
     Authorize.jwt_required()
 
     current_user = Authorize.get_jwt_subject()

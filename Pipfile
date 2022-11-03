@@ -13,8 +13,7 @@ uuid = "*"
 python-jose = {extras = ["cryptography"], version = "*"}
 passlib = "*"
 fastapi-jwt-auth = "*"
-jwt = "*"
-pyjwt = "*"
+crypto = "*"
 
 [dev-packages]
 

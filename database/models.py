@@ -1,6 +1,6 @@
 import uuid
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, BLOB
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -18,9 +18,9 @@ class User(Base):
     id = Column(String, primary_key=True, index=True, default=generate_uuid)
     username = Column(String, unique=True, index=True)
     password = Column(String)
-    
-    #secret_key can be something deterministic on client side -> this key is used to encrypt the password using AES 
-    #since password is very light (small in size), we can use public key encryption with a deterministic secret_key
+
+    # secret_key can be something deterministic on client side -> this key is used to encrypt the password using AES
+    # since password is very light (small in size), we can use public key encryption with a deterministic secret_key
     secret_key = Column(String)
     subAccounts = relationship("SubAccount", back_populates="owner")
 
@@ -32,10 +32,11 @@ class User(Base):
 class SubAccount(Base):
     __tablename__ = "subaccount"
 
-    id = Column(Integer, primary_key=True, index=True)
-    owner_id = Column(Integer, ForeignKey("user.id"))
+    id = Column(String, primary_key=True, index=True)
+    owner_id = Column(String, ForeignKey("user.id"))
     name = Column(String, index=True)
     username = Column(String)
     password = Column(String)
+    vault_key = Column(String)
 
     owner = relationship("User", back_populates="subAccounts")

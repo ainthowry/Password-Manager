@@ -74,7 +74,7 @@ async def login(
     # Set the JWT cookies in the response
     Authorize.set_access_cookies(access_token)
     Authorize.set_refresh_cookies(refresh_token)
-
+    
     return {
         "user": result.username,
         "token_type": "bearer",
