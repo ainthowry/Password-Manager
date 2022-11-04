@@ -51,23 +51,26 @@ async def change(
 
 
 @accountroute.get("/subaccount")
-async def subaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
+async def findSubaccount(id:str, Authorize: AuthJWT = Depends(), db: Session = Depends(get_async_session),):
     Authorize.jwt_required()
 
     current_user = Authorize.get_jwt_subject()
-    return {"name": "name", "username": "username", "password": "hello"}
+    result = await get_subaccount(id, current_user, db)
+    return result
 
 
 @accountroute.get("/subaccounts")
-async def findAllSubaccount(account_number: int = 0, Authorize: AuthJWT = Depends()):
+async def findSubaccounts(Authorize: AuthJWT = Depends(), db: Session = Depends(get_async_session),):
     Authorize.jwt_required()
 
     current_user = Authorize.get_jwt_subject()
-    return current_user
+    result = await get_subaccounts(current_user, db)
+
+    return result
 
 
 @accountroute.post("/create/subaccount")
-async def create_sub(
+async def createSub(
     form_data: OAuth2PasswordRequestForm = Depends(),
     name: str = Form(),
     Authorize: AuthJWT = Depends(),
@@ -81,7 +84,6 @@ async def create_sub(
     new_subAccount.name = name
     new_subAccount.subUsername = form_data.username
     new_subAccount.subPassword = form_data.password
-    print(vars(new_subAccount))
 
     result = await create_subaccount(
         username=current_user, subaccount_details=new_subAccount, db=db

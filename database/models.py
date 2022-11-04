@@ -2,6 +2,7 @@ import uuid
 
 from sqlalchemy import Column, ForeignKey, Integer, String, BLOB
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import BYTEA
 
 from .database import Base
 

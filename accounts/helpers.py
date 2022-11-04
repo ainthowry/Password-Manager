@@ -81,44 +81,91 @@ async def create_subaccount(
     db: Session = Depends(get_async_session),
 ):
     user_details = await get_user(username, db)
-    print(vars(user_details))
 
     # Is not really done in real life
     secret_key = user_details.secret_key
-    print('secret',secret_key)
-    
+
     # get the new salt used to generate the vault_key
     vault_key = secrets.token_hex(16)
     id = secrets.token_hex(16)
 
     # encrypt_key is deterministic and can be created on the fly
-    encrypt_key = pbkdf2_sha256.using(salt=bytes(id,'utf-8'), rounds=100000).hash(secret_key)
-    cipher = AES.new(bytes(encrypt_key[-16:],'utf-8'), AES.MODE_OCB)
-   
-    ciphertext, tag = cipher.encrypt_and_digest(bytes(subaccount_details.subUsername + "|" + subaccount_details.subPassword,'utf-8'))
-    print('ciphertext',ciphertext)
-    print(type(id))
-    print(type(user_details.id))
-    print(type(subaccount_details.name))
-    print(type(ciphertext))
-    print(type(tag))
-    print(type(vault_key))
+    encrypt_key = pbkdf2_sha256.using(salt=bytes(id, "utf-8"), rounds=100000).hash(
+        secret_key
+    )
+    print(encrypt_key)
+    cipher = AES.new(bytes(encrypt_key[-16:], "utf-8"), AES.MODE_OCB)
+
+    ciphertext, tag = cipher.encrypt_and_digest(
+        bytes(
+            subaccount_details.subUsername + "|" + subaccount_details.subPassword,
+            "utf-8",
+        )
+    )
+    print(ciphertext)
+    print(tag)
     new_subaccount = SubAccount(
         id=id,
         owner_id=user_details.id,
         name=subaccount_details.name,
-        data=str(ciphertext,'utf-8'),
-        tag=str(tag,'utf-8'),
+        data=ciphertext.decode('unicode_escape'),
+        tag=tag.decode('unicode_escape'),
         vault_key=vault_key,
     )
-    print('subaccount created')
-    print(vars(new_subaccount))
+    print('done')
     db.add(new_subaccount)
     await db.commit()
     await db.refresh(new_subaccount)
 
     return new_subaccount
 
+
+async def get_subaccount(
+    id: str,
+    username:str,
+    db: Session = Depends(get_async_session),
+):
+    user_details = await get_user(username, db)
+
+    # Is not really done in real life
+    secret_key = user_details.secret_key
+    
+    query = select(SubAccount).where(SubAccount.id == id)
+    result = (await db.scalars(query)).first()
+    
+    # get the new salt used to generate the vault_key
+    data = result.data.encode('unicode_escape')
+    tag = result.tag.encode('unicode_escape')
+    print(data)
+    print(tag)
+    
+    # encrypt_key is deterministic and can be created on the fly
+    encrypt_key = pbkdf2_sha256.using(salt=bytes(id, "utf-8"), rounds=100000).hash(
+        secret_key
+    )
+    print(encrypt_key)
+    cipher = AES.new(bytes(encrypt_key[-16:], "utf-8"), AES.MODE_OCB)
+    
+    try:
+        plaintext = cipher.decrypt_and_verify(data,tag)
+        print(plaintext)
+        return plaintext
+    
+    except (ValueError, KeyError):
+        print("Incorrect decryption")
+        return None
+    
+
+async def get_subaccounts(
+    username: str,
+    db: Session = Depends(get_async_session),
+):
+    user_details = await get_user(username, db)
+    
+    query = select(SubAccount).where(SubAccount.owner_id == user_details.id)
+    result = (await db.scalars(query)).all()
+    
+    return result
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
