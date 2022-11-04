@@ -35,8 +35,8 @@ class SubAccount(Base):
     id = Column(String, primary_key=True, index=True)
     owner_id = Column(String, ForeignKey("user.id"))
     name = Column(String, index=True)
-    username = Column(String)
-    password = Column(String)
+    data = Column(String)
+    tag = Column(String)
     vault_key = Column(String)
 
     owner = relationship("User", back_populates="subAccounts")
