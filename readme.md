@@ -1,13 +1,28 @@
 This repo uses pipenv to handle dependencies in lock environment
 
-Using Deta to deploy the backend and Railway to deploy the DB
+- Using Heroku to deploy the backend and Railway to deploy the DB
+  <br>
 
-DB: Postgresql, Backend: Fastapi, ORM: SQLAlchemy
+- DB: **Postgresql**
+- Backend: **Fastapi**
+- ORM: **SQLAlchemy**
 
-Libs used: asynpc, pycryptodome, secrets, sqlalchemy, passlib
+Additional libs used: **asynpc, sqlalchemy, secrets, passlib, bcrypt, pycryptodome** (Refer to pipfile)
 
-To re-generate requirements.txt after updating dependencies, run the following command (you need to make sure the encoding of the requirements.txt is utf-8)
+To re-generate requirements.txt after updating dependencies, run the following command
 
 ```
 pipenv run pip freeze > requirements.txt
+```
+
+Heroku requires 3 files to deploy: procfile, requirements.txt and runtime.txt (examples provided)
+
+To deploy this locally, simply start up the venv then run main.py
+
+```
+pipenv install
+
+pipenv shell
+
+py main.py
 ```
