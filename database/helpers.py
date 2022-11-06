@@ -1,13 +1,11 @@
 from typing import AsyncGenerator
 
-from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from fastapi.security import OAuth2PasswordBearer
 
 from .database import async_session_maker, engine, Base
 from .models import *
-from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 # to get a string like this run:

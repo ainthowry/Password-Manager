@@ -7,6 +7,7 @@ sys.path.append("..")
 # Imports
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 
 from fastapi_another_jwt_auth import AuthJWT
 
@@ -43,12 +44,14 @@ async def register(
     refresh_token = Authorize.create_refresh_token(subject=result.username)
 
     # Set the JWT cookies in the response
-    Authorize.set_access_cookies(access_token)
-    Authorize.set_refresh_cookies(refresh_token)
-    return {
+    response = JSONResponse(content={
         "user": result.username,
         "token_type": "bearer",
-    }
+    })
+    Authorize.set_access_cookies(access_token,response)
+    Authorize.set_refresh_cookies(refresh_token,response)
+    
+    return response
 
 
 @authroute.post(
@@ -71,14 +74,16 @@ async def login(
     access_token = Authorize.create_access_token(subject=result.username, fresh=True)
     refresh_token = Authorize.create_refresh_token(subject=result.username)
 
-    # Set the JWT cookies in the response
-    Authorize.set_access_cookies(access_token)
-    Authorize.set_refresh_cookies(refresh_token)
-
-    return {
+    response = JSONResponse(content={
         "user": result.username,
         "token_type": "bearer",
-    }
+    })
+
+    # Set the JWT cookies in the response
+    Authorize.set_access_cookies(access_token,response)
+    Authorize.set_refresh_cookies(refresh_token,response)
+    
+    return response
 
 
 @authroute.post("/refresh")
@@ -89,7 +94,7 @@ def refresh(Authorize: AuthJWT = Depends()):
     new_access_token = Authorize.create_access_token(subject=current_user)
     # Set the JWT cookies in the response
     Authorize.set_access_cookies(new_access_token)
-    return {"msg": "The token has been refresh"}
+    return {"msg": "The token has been refresh", "access_token": new_access_token}
 
 
 @authroute.delete("/logout")

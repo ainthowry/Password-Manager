@@ -5,19 +5,15 @@ name = "pypi"
 
 [packages]
 uvicorn = "*"
+passlib = "*"
 fastapi = "*"
 sqlalchemy = "*"
-fastapi-users = {extras = ["sqlalchemy"], version = "*"}
-black = "*"
-uuid = "*"
-python-jose = {extras = ["cryptography"], version = "*"}
-passlib = "*"
-fastapi-jwt-auth = "*"
-crypto = "*"
-pymysql = "*"
-aiomysql = "*"
-psycopg2 = "*"
+databases = "*"
 asyncpg = "*"
+pycryptodome = "*"
+fastapi-another-jwt-auth = "*"
+python-multipart = "*"
+bcrypt = "*"
 
 [dev-packages]
 

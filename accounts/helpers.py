@@ -80,7 +80,6 @@ async def create_subaccount(
     subaccount_details: subaccountDetails,
     db: Session = Depends(get_async_session),
 ):
-    result = await get_subaccount()
     user_details = await get_user(username, db)
 
     # Is not really done in real life
