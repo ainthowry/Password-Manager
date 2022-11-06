@@ -18,7 +18,7 @@ from .helpers import *
 # Db models
 from database import models
 
-accountprefix = "accounts"
+accountprefix = "/accounts"
 accountroute = APIRouter()
 
 # Generate secret_key
