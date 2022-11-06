@@ -38,6 +38,6 @@ class SubAccount(Base):
     name = Column(String, index=True)
     data = Column(String)
     tag = Column(String)
-    vault_key = Column(String)
+    nonce = Column(String)
 
     owner = relationship("User", back_populates="subAccounts")

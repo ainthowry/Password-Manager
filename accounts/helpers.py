@@ -80,6 +80,7 @@ async def create_subaccount(
     subaccount_details: subaccountDetails,
     db: Session = Depends(get_async_session),
 ):
+    result = await get_subaccount()
     user_details = await get_user(username, db)
 
     # Is not really done in real life
@@ -93,7 +94,7 @@ async def create_subaccount(
     encrypt_key = pbkdf2_sha256.using(salt=bytes(id, "utf-8"), rounds=100000).hash(
         secret_key
     )
-    print(encrypt_key)
+
     cipher = AES.new(bytes(encrypt_key[-16:], "utf-8"), AES.MODE_OCB)
 
     ciphertext, tag = cipher.encrypt_and_digest(
@@ -102,17 +103,16 @@ async def create_subaccount(
             "utf-8",
         )
     )
-    print(ciphertext)
-    print(tag)
+
     new_subaccount = SubAccount(
         id=id,
         owner_id=user_details.id,
         name=subaccount_details.name,
-        data=ciphertext.decode('unicode_escape'),
-        tag=tag.decode('unicode_escape'),
-        vault_key=vault_key,
+        data=ciphertext.decode("unicode_escape"),
+        tag=tag.decode("unicode_escape"),
+        nonce=cipher.nonce.decode("unicode_escape"),
     )
-    print('done')
+
     db.add(new_subaccount)
     await db.commit()
     await db.refresh(new_subaccount)
@@ -122,50 +122,60 @@ async def create_subaccount(
 
 async def get_subaccount(
     id: str,
-    username:str,
+    username: str,
     db: Session = Depends(get_async_session),
 ):
     user_details = await get_user(username, db)
 
     # Is not really done in real life
     secret_key = user_details.secret_key
-    
+
     query = select(SubAccount).where(SubAccount.id == id)
     result = (await db.scalars(query)).first()
-    
+
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Subaccount not found",
+        )
+
     # get the new salt used to generate the vault_key
-    data = result.data.encode('unicode_escape')
-    tag = result.tag.encode('unicode_escape')
-    print(data)
-    print(tag)
-    
+    data = result.data.encode("raw_unicode_escape")
+    tag = result.tag.encode("raw_unicode_escape")
+    nonce = result.nonce.encode("raw_unicode_escape")
+
     # encrypt_key is deterministic and can be created on the fly
     encrypt_key = pbkdf2_sha256.using(salt=bytes(id, "utf-8"), rounds=100000).hash(
         secret_key
     )
-    print(encrypt_key)
-    cipher = AES.new(bytes(encrypt_key[-16:], "utf-8"), AES.MODE_OCB)
-    
+
+    cipher = AES.new(bytes(encrypt_key[-16:], "utf-8"), mode=AES.MODE_OCB, nonce=nonce)
+
     try:
-        plaintext = cipher.decrypt_and_verify(data,tag)
-        print(plaintext)
-        return plaintext
-    
+        plaintext = cipher.decrypt_and_verify(data, tag)
+        plaintext = plaintext.decode("utf-8").split("|")
+        plainUsername = plaintext[0]
+        plainPassword = plaintext[1]
+        return {"plainUsername": plainUsername, "plainPassword": plainPassword}
+
     except (ValueError, KeyError):
-        print("Incorrect decryption")
-        return None
-    
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect decryption",
+        )
+
 
 async def get_subaccounts(
     username: str,
     db: Session = Depends(get_async_session),
 ):
     user_details = await get_user(username, db)
-    
+
     query = select(SubAccount).where(SubAccount.owner_id == user_details.id)
     result = (await db.scalars(query)).all()
-    
+
     return result
+
 
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)

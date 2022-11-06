@@ -51,7 +51,11 @@ async def change(
 
 
 @accountroute.get("/subaccount")
-async def findSubaccount(id:str, Authorize: AuthJWT = Depends(), db: Session = Depends(get_async_session),):
+async def findSubaccount(
+    id: str,
+    Authorize: AuthJWT = Depends(),
+    db: Session = Depends(get_async_session),
+):
     Authorize.jwt_required()
 
     current_user = Authorize.get_jwt_subject()
@@ -59,17 +63,21 @@ async def findSubaccount(id:str, Authorize: AuthJWT = Depends(), db: Session = D
     return result
 
 
+# No pagination
 @accountroute.get("/subaccounts")
-async def findSubaccounts(Authorize: AuthJWT = Depends(), db: Session = Depends(get_async_session),):
+async def findSubaccounts(
+    Authorize: AuthJWT = Depends(),
+    db: Session = Depends(get_async_session),
+):
     Authorize.jwt_required()
 
     current_user = Authorize.get_jwt_subject()
     result = await get_subaccounts(current_user, db)
 
-    return result
+    return [{"name": obj.name, "id": obj.id, "data": obj.data} for obj in result]
 
 
-@accountroute.post("/create/subaccount")
+@accountroute.post("/subaccount")
 async def createSub(
     form_data: OAuth2PasswordRequestForm = Depends(),
     name: str = Form(),
@@ -89,4 +97,6 @@ async def createSub(
         username=current_user, subaccount_details=new_subAccount, db=db
     )
 
-    return current_user, result
+    return {
+        "name": result.name,
+    }
