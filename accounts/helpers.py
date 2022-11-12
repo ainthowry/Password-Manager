@@ -21,9 +21,13 @@ class subaccountDetails:
 
 async def get_user(username: str, db: Session = Depends(get_async_session)):
     query = select(User).where(User.username == username)
-    result = (await db.scalars(query)).first()
-    return result
-
+    try:
+        result = (await db.scalars(query)).first()
+        return result
+    except Exception:
+        print(f"Username {username} not found")
+        return None
+    
 
 async def validate_user(
     username: str, password: str, db: Session = Depends(get_async_session)
@@ -139,6 +143,8 @@ async def get_subaccount(
         )
 
     # get the new salt used to generate the vault_key
+    id = result.id
+    name = result.name
     data = result.data.encode("raw_unicode_escape")
     tag = result.tag.encode("raw_unicode_escape")
     nonce = result.nonce.encode("raw_unicode_escape")
@@ -155,7 +161,7 @@ async def get_subaccount(
         plaintext = plaintext.decode("utf-8").split("|")
         plainUsername = plaintext[0]
         plainPassword = plaintext[1]
-        return {"plainUsername": plainUsername, "plainPassword": plainPassword}
+        return {"id": id, "name": name, "plainUsername": plainUsername, "plainPassword": plainPassword}
 
     except (ValueError, KeyError):
         raise HTTPException(
