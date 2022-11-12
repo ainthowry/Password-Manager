@@ -18,9 +18,11 @@ from fastapi_another_jwt_auth.exceptions import AuthJWTException
 
 app = FastAPI()
 
+origins = ["http://localhost:3000", "https://4010-password-manager.netlify.app"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000","https://4010-password-manager.netlify.app"],
+    allow_origins=origins,
     allow_methods=["*"],
     allow_headers=["*"],
     allow_credentials=True,
