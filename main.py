@@ -20,7 +20,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://localhost", "https://4010-password-manager.netlify.app/"],
     allow_methods=["*"],
     allow_headers=["*"],
 )

@@ -44,13 +44,15 @@ async def register(
     refresh_token = Authorize.create_refresh_token(subject=result.username)
 
     # Set the JWT cookies in the response
-    response = JSONResponse(content={
-        "user": result.username,
-        "token_type": "bearer",
-    })
-    Authorize.set_access_cookies(access_token,response)
-    Authorize.set_refresh_cookies(refresh_token,response)
-    
+    response = JSONResponse(
+        content={
+            "user": result.username,
+            "token_type": "bearer",
+        }
+    )
+    Authorize.set_access_cookies(access_token, response)
+    Authorize.set_refresh_cookies(refresh_token, response)
+
     return response
 
 
@@ -74,15 +76,17 @@ async def login(
     access_token = Authorize.create_access_token(subject=result.username, fresh=True)
     refresh_token = Authorize.create_refresh_token(subject=result.username)
 
-    response = JSONResponse(content={
-        "user": result.username,
-        "token_type": "bearer",
-    })
+    response = JSONResponse(
+        content={
+            "user": result.username,
+            "token_type": "bearer",
+        }
+    )
 
     # Set the JWT cookies in the response
-    Authorize.set_access_cookies(access_token,response)
-    Authorize.set_refresh_cookies(refresh_token,response)
-    
+    Authorize.set_access_cookies(access_token, response)
+    Authorize.set_refresh_cookies(refresh_token, response)
+
     return response
 
 
